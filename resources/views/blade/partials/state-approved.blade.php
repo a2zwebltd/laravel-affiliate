@@ -8,7 +8,7 @@
 @endphp
 
 {{-- KPI cards --}}
-<div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+<div class="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
     <div class="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <div class="text-xs font-semibold uppercase tracking-wider text-zinc-500">{{ __('Total earned') }}</div>
         <div class="mt-2 text-3xl font-bold text-zinc-900 dark:text-zinc-50">{{ $fmt($stats['total_earned_cents']) }}<span class="ml-1 text-base font-medium text-zinc-400">{{ $cur }}</span></div>
@@ -18,6 +18,14 @@
         <div class="text-xs font-semibold uppercase tracking-wider text-zinc-500">{{ __('Last closed month') }}</div>
         <div class="mt-2 text-3xl font-bold text-emerald-600 dark:text-emerald-400">{{ $fmt($stats['last_month_earned_cents']) }}<span class="ml-1 text-base font-medium text-zinc-400">{{ $cur }}</span></div>
         <div class="mt-1 text-xs text-zinc-500">{{ now()->subMonthNoOverflow()->format('F Y') }}</div>
+    </div>
+    <div class="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <div class="flex items-center gap-2">
+            <div class="text-xs font-semibold uppercase tracking-wider text-zinc-500">{{ __('Current month so far') }}</div>
+            <span class="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">{{ __('in progress') }}</span>
+        </div>
+        <div class="mt-2 text-3xl font-bold text-zinc-500 dark:text-zinc-400">{{ $fmt($stats['current_month_running_cents'] ?? 0) }}<span class="ml-1 text-base font-medium text-zinc-400">{{ $cur }}</span></div>
+        <div class="mt-1 text-xs text-zinc-500">{{ now()->format('F Y') }} · {{ __('not yet closed') }}</div>
     </div>
     <div class="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <div class="text-xs font-semibold uppercase tracking-wider text-zinc-500">{{ __('Active paying referrals') }}</div>
@@ -52,11 +60,18 @@
         @endphp
         <div class="mt-6 flex h-44 items-end gap-2">
             @foreach ($stats['monthly'] as $m)
-                @php $h = max(2, intval(($m['gross_cents'] / $maxMonth) * 100)); @endphp
-                <div class="group flex h-full flex-1 flex-col items-center justify-end gap-1" title="{{ \Carbon\Carbon::create($m['year'], $m['month'], 1)->format('M Y') }}: {{ $fmt($m['gross_cents']) }} {{ $cur }}">
+                @php
+                    $h = max(2, intval(($m['gross_cents'] / $maxMonth) * 100));
+                    $isCurrent = ! empty($m['is_current']);
+                    $titleSuffix = $isCurrent ? ' ('.__('in progress').')' : '';
+                    $barClasses = $isCurrent
+                        ? 'bg-zinc-300 dark:bg-zinc-600'
+                        : 'bg-gradient-to-t from-emerald-600 to-teal-400 dark:from-emerald-500 dark:to-teal-300';
+                @endphp
+                <div class="group flex h-full flex-1 flex-col items-center justify-end gap-1" title="{{ \Carbon\Carbon::create($m['year'], $m['month'], 1)->format('M Y') }}: {{ $fmt($m['gross_cents']) }} {{ $cur }}{{ $titleSuffix }}">
                     <div class="text-[10px] font-mono text-zinc-500 opacity-0 transition group-hover:opacity-100">{{ $fmt($m['gross_cents']) }}</div>
-                    <div class="w-full rounded-t bg-gradient-to-t from-emerald-600 to-teal-400 dark:from-emerald-500 dark:to-teal-300 transition-all" style="height: {{ $h }}%"></div>
-                    <div class="text-[10px] text-zinc-500">{{ \Carbon\Carbon::create($m['year'], $m['month'], 1)->format('M') }}</div>
+                    <div class="w-full rounded-t {{ $barClasses }} transition-all" style="height: {{ $h }}%"></div>
+                    <div class="text-[10px] {{ $isCurrent ? 'font-semibold text-zinc-500' : 'text-zinc-500' }}">{{ \Carbon\Carbon::create($m['year'], $m['month'], 1)->format('M') }}</div>
                 </div>
             @endforeach
         </div>

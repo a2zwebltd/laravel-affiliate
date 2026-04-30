@@ -8,7 +8,6 @@ use A2ZWeb\Affiliate\Models\AffiliateCommission;
 use A2ZWeb\Affiliate\Models\AffiliatePartner;
 use A2ZWeb\Affiliate\Models\AffiliateReferral;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use InvalidArgumentException;
@@ -122,7 +121,7 @@ class MonthlyCloser
             $cursor->addMonthNoOverflow();
         }
 
-        Cache::forget('affiliate:partner:'.$partner->user_id.':stats:v1');
+        $this->statistics->forget((int) $partner->user_id);
 
         return $totalTouched;
     }

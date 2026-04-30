@@ -24,6 +24,11 @@ class FixedRevenueResolver implements RevenueResolver
     {
         return $this->cents;
     }
+
+    public function currentMonthRunningRevenueCents(int $userId): int
+    {
+        return 0;
+    }
 }
 
 it('closes a past month and creates commissions', function () {

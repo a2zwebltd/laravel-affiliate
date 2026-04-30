@@ -10,4 +10,9 @@ class NullRevenueResolver implements RevenueResolver
     {
         return 0;
     }
+
+    public function currentMonthRunningRevenueCents(int $userId): int
+    {
+        return 0;
+    }
 }

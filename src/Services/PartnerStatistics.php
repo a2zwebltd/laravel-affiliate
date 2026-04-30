@@ -3,27 +3,33 @@
 namespace A2ZWeb\Affiliate\Services;
 
 use A2ZWeb\Affiliate\Contracts\ReferredUserInfoResolver;
+use A2ZWeb\Affiliate\Contracts\RevenueResolver;
 use A2ZWeb\Affiliate\Models\AffiliateAdjustment;
 use A2ZWeb\Affiliate\Models\AffiliateCommission;
+use A2ZWeb\Affiliate\Models\AffiliatePartner;
 use A2ZWeb\Affiliate\Models\AffiliatePayoutRequest;
 use A2ZWeb\Affiliate\Models\AffiliateReferral;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 class PartnerStatistics
 {
     public function __construct(
         private readonly ReferredUserInfoResolver $infoResolver,
+        private readonly RevenueResolver $revenueResolver,
+        private readonly CommissionCalculator $calculator,
     ) {}
 
     /**
      * @return array{
      *   total_earned_cents:int,
      *   last_month_earned_cents:int,
+     *   current_month_running_cents:int,
      *   available_to_request_cents:int,
      *   active_paying_referrals:int,
      *   total_referrals:int,
-     *   monthly:array<int, array{year:int,month:int,gross_cents:int,paying_users:int}>,
+     *   monthly:array<int, array{year:int,month:int,gross_cents:int,paying_users:int,is_current:bool}>,
      *   referrals:array<int, array{user_id:int,display_name:string,is_paying:bool,plan:?string,attributed_at:string,gross_last_12mo_cents:int}>,
      * }
      */
@@ -42,7 +48,7 @@ class PartnerStatistics
 
     private function cacheKey(int $partnerUserId): string
     {
-        return 'affiliate:partner:'.$partnerUserId.':stats:v1';
+        return 'affiliate:partner:'.$partnerUserId.':stats:v2';
     }
 
     /**
@@ -136,6 +142,7 @@ class PartnerStatistics
                 'month' => $d->month,
                 'gross_cents' => $netByMonth[$d->year.'-'.$d->month] ?? 0,
                 'paying_users' => 0,
+                'is_current' => false,
             ];
         }
 
@@ -149,10 +156,13 @@ class PartnerStatistics
                     'month' => $m,
                     'gross_cents' => $cents,
                     'paying_users' => 0,
+                    'is_current' => false,
                 ];
             }
         }
 
+        // total_earned_cents reflects only fully-closed periods. The in-progress
+        // current month is rendered separately and excluded from this sum.
         $totalEarnedCents = (int) array_sum(array_column($monthlyMap, 'gross_cents'));
 
         // Historical fidelity: use stored commission_amount_cents and
@@ -249,12 +259,29 @@ class PartnerStatistics
             ])
             ->exists();
 
+        // In-progress current-month commission. Uses the partner's CURRENT
+        // revenue_share_bp by design — there is no historical rate yet for an
+        // unclosed month. The bar is rendered greyed in the dashboard via
+        // is_current=true. Excluded from total_earned_cents.
+        $currentMonthRunningCents = $this->currentMonthRunningCommissionCents($partnerUserId, $referrals);
+
+        $now = Carbon::now();
+        $currentKey = $now->year.'-'.$now->month;
+        $monthlyMap[$currentKey] = [
+            'year' => $now->year,
+            'month' => $now->month,
+            'gross_cents' => $currentMonthRunningCents,
+            'paying_users' => 0,
+            'is_current' => true,
+        ];
+
         // Sort monthly oldest → newest by (year, month) — covers older periods we appended.
         uasort($monthlyMap, fn (array $a, array $b): int => [$a['year'], $a['month']] <=> [$b['year'], $b['month']]);
 
         return [
             'total_earned_cents' => $totalEarnedCents,
             'last_month_earned_cents' => $lastMonthEarnedCents,
+            'current_month_running_cents' => $currentMonthRunningCents,
             'available_to_request_cents' => $availableToRequestCents,
             'has_pending_payout_request' => $hasPending,
             'active_paying_referrals' => $activePaying,
@@ -264,6 +291,51 @@ class PartnerStatistics
             'referrals' => $referralRows,
             'adjustments' => $this->adjustmentsList($partnerUserId),
         ];
+    }
+
+    /**
+     * Sum the running current-month commission across the partner's referrals.
+     * Uses the partner's current effective rate — current-month commission has
+     * no historical rate to honor yet (the period isn't closed).
+     *
+     * @param  Collection<int, AffiliateReferral>  $referrals
+     */
+    private function currentMonthRunningCommissionCents(int $partnerUserId, $referrals): int
+    {
+        $partner = AffiliatePartner::query()
+            ->where('user_id', $partnerUserId)
+            ->first();
+
+        $rateBp = $partner
+            ? $partner->effectiveRevenueShareBp()
+            : (int) config('affiliate.revenue_share_bp', 3000);
+
+        $now = Carbon::now();
+        $monthEnd = $now->copy()->endOfMonth();
+        $mode = config('affiliate.commission_window.mode', 'lifetime');
+        $windowMonths = (int) config('affiliate.commission_window.months', 12);
+
+        $running = 0;
+        foreach ($referrals as $referral) {
+            if ($mode !== 'lifetime') {
+                $cutoff = Carbon::parse($referral->attributed_at)->addMonthsNoOverflow($windowMonths);
+                if ($monthEnd->greaterThan($cutoff)) {
+                    continue;
+                }
+            }
+
+            $sourceCents = $this->revenueResolver->currentMonthRunningRevenueCents(
+                (int) $referral->referred_user_id,
+            );
+
+            if ($sourceCents <= 0) {
+                continue;
+            }
+
+            $running += $this->calculator->commissionCents($sourceCents, $rateBp);
+        }
+
+        return $running;
     }
 
     /**
