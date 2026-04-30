@@ -48,7 +48,7 @@ class PartnerDashboard extends Component
             'min_referred_users' => (int) config('affiliate.min_referred_users', 2),
             'referred_count' => $eligibility->referredCount($user),
             'currency' => config('affiliate.currency', 'usd'),
-            'revenue_share_pct' => (int) config('affiliate.revenue_share_bp', 3000) / 100,
+            'revenue_share_pct' => ($partner?->effectiveRevenueShareBp() ?? (int) config('affiliate.revenue_share_bp', 3000)) / 100,
             'affiliate_link' => $user->affiliateLink(),
             'general_terms_url' => config('affiliate.terms.general_url'),
             'affiliate_terms_url' => config('affiliate.terms.affiliate_url'),

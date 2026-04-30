@@ -20,10 +20,7 @@
         <div class="mt-1 text-xs text-zinc-500">{{ now()->subMonthNoOverflow()->format('F Y') }}</div>
     </div>
     <div class="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <div class="flex items-center gap-2">
-            <div class="text-xs font-semibold uppercase tracking-wider text-zinc-500">{{ __('Current month so far') }}</div>
-            <span class="rounded-full bg-zinc-100 px-1.5 py-0.5 text-[10px] font-medium text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400">{{ __('in progress') }}</span>
-        </div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-zinc-500">{{ __('Current month so far') }}</div>
         <div class="mt-2 text-3xl font-bold text-zinc-500 dark:text-zinc-400">{{ $fmt($stats['current_month_running_cents'] ?? 0) }}<span class="ml-1 text-base font-medium text-zinc-400">{{ $cur }}</span></div>
         <div class="mt-1 text-xs text-zinc-500">{{ now()->format('F Y') }} · {{ __('not yet closed') }}</div>
     </div>

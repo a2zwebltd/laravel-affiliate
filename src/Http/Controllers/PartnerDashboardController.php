@@ -24,7 +24,7 @@ class PartnerDashboardController extends Controller
             'general_terms_url' => config('affiliate.terms.general_url'),
             'affiliate_terms_url' => config('affiliate.terms.affiliate_url'),
             'currency' => config('affiliate.currency', 'usd'),
-            'revenue_share_pct' => (int) config('affiliate.revenue_share_bp', 3000) / 100,
+            'revenue_share_pct' => ($partner?->effectiveRevenueShareBp() ?? (int) config('affiliate.revenue_share_bp', 3000)) / 100,
             'affiliate_link' => $user->affiliateLink(),
             'stats' => $partner?->isApproved() ? $statistics->for((int) $user->getKey()) : null,
             'payout_requests' => $partner
