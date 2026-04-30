@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('affiliate_payout_requests', function (Blueprint $table): void {
             $table->id();
-            $table->unsignedBigInteger('partner_user_id')->index();
-            $table->enum('status', ['pending', 'approved', 'rejected', 'paid', 'cancelled'])->default('pending')->index();
+            $table->unsignedBigInteger('partner_user_id')->index('affiliate_payout_requests_partner_user_id_index');
+            $table->enum('status', ['pending', 'approved', 'rejected', 'paid', 'cancelled'])->default('pending')->index('affiliate_payout_requests_status_index');
             $table->date('period_start');
             $table->date('period_end');
             $table->unsignedBigInteger('gross_amount_cents');

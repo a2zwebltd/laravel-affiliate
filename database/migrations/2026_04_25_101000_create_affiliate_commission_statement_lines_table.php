@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('affiliate_commission_statement_lines', function (Blueprint $table): void {
             $table->id();
-            $table->unsignedBigInteger('statement_id')->index();
+            $table->unsignedBigInteger('statement_id')->index('affiliate_statement_lines_statement_id_index');
             $table->date('transaction_date');
             $table->string('customer_reference', 64);
             $table->string('subscription_or_invoice_reference', 191)->nullable();

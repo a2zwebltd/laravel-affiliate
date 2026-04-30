@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('affiliate_commission_statements', function (Blueprint $table): void {
             $table->id();
-            $table->string('statement_number', 64)->unique();
+            $table->string('statement_number', 64)->unique('affiliate_statements_statement_number_unique');
 
             // Issuing entity snapshot (frozen at draft creation, never updated)
             $table->string('issuing_entity', 64);
@@ -26,7 +26,7 @@ return new class extends Migration
             // contact details, payout method etc. — so future profile edits do NOT mutate historical statements.
             $table->json('affiliate_snapshot')->nullable();
 
-            $table->unsignedBigInteger('partner_user_id')->index();
+            $table->unsignedBigInteger('partner_user_id')->index('affiliate_statements_partner_user_id_index');
             $table->date('period_start');
             $table->date('period_end');
             $table->string('currency', 3)->default('usd');
@@ -38,7 +38,7 @@ return new class extends Migration
             $table->enum('payment_method', ['bank_transfer', 'wise', 'paypal', 'other'])->nullable();
             $table->string('payment_reference', 191)->nullable();
             $table->date('payment_date')->nullable();
-            $table->enum('payment_status', ['draft', 'issued', 'paid', 'cancelled'])->default('draft')->index();
+            $table->enum('payment_status', ['draft', 'issued', 'paid', 'cancelled'])->default('draft')->index('affiliate_statements_payment_status_index');
 
             $table->string('pdf_disk', 32)->nullable();
             $table->string('pdf_path', 512)->nullable();
@@ -49,7 +49,7 @@ return new class extends Migration
             $table->timestamp('paid_at')->nullable();
             $table->timestamp('sent_to_affiliate_at')->nullable();
 
-            $table->unsignedBigInteger('payout_request_id')->nullable()->index();
+            $table->unsignedBigInteger('payout_request_id')->nullable()->index('affiliate_statements_payout_request_id_index');
 
             $table->timestamps();
 

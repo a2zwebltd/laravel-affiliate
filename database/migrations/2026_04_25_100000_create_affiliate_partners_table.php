@@ -10,9 +10,9 @@ return new class extends Migration
     {
         Schema::create('affiliate_partners', function (Blueprint $table): void {
             $table->id();
-            $table->unsignedBigInteger('user_id')->unique();
-            $table->string('code', 32)->unique();
-            $table->enum('status', ['pending', 'approved', 'rejected', 'suspended'])->default('pending')->index();
+            $table->unsignedBigInteger('user_id')->unique('affiliate_partners_user_id_unique');
+            $table->string('code', 32)->unique('affiliate_partners_code_unique');
+            $table->enum('status', ['pending', 'approved', 'rejected', 'suspended'])->default('pending')->index('affiliate_partners_status_index');
 
             $table->enum('payout_method', ['paypal', 'bank_transfer'])->nullable();
             $table->string('paypal_email')->nullable();
@@ -30,7 +30,7 @@ return new class extends Migration
             $table->unsignedBigInteger('decided_by_user_id')->nullable();
             $table->text('rejection_reason')->nullable();
 
-            $table->date('program_joined_at')->nullable()->index();
+            $table->date('program_joined_at')->nullable()->index('affiliate_partners_program_joined_at_index');
 
             $table->string('accepted_general_terms_version', 32)->nullable();
             $table->string('accepted_affiliate_terms_version', 32)->nullable();

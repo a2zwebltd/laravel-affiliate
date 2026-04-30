@@ -10,8 +10,8 @@ return new class extends Migration
     {
         Schema::create('affiliate_terms_acceptances', function (Blueprint $table): void {
             $table->id();
-            $table->unsignedBigInteger('user_id')->index();
-            $table->unsignedBigInteger('affiliate_partner_id')->nullable()->index();
+            $table->unsignedBigInteger('user_id')->index('affiliate_terms_acceptances_user_id_index');
+            $table->unsignedBigInteger('affiliate_partner_id')->nullable()->index('affiliate_terms_acceptances_partner_id_index');
             $table->string('general_terms_version', 32);
             $table->string('affiliate_terms_version', 32);
             $table->string('ip', 64)->nullable();
