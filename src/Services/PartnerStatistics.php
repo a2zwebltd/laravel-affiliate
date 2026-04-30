@@ -155,37 +155,71 @@ class PartnerStatistics
 
         $totalEarnedCents = (int) array_sum(array_column($monthlyMap, 'gross_cents'));
 
-        $commissions = AffiliateCommission::query()
+        // Historical fidelity: use stored commission_amount_cents and
+        // AffiliateAdjustment::commissionAmountCents() — NEVER the partner's current
+        // revenue_share_bp. Each row carries the rate that was in force at close-time.
+        $cutoffYear = Carbon::now()->subYear()->year;
+
+        $perUserPerMonthGross = AffiliateCommission::query()
             ->where('partner_user_id', $partnerUserId)
             ->tap($closedScope)
-            ->where('period_year', '>=', Carbon::now()->subYear()->year)
-            ->get(['referred_user_id', 'period_year', 'period_month']);
+            ->where('period_year', '>=', $cutoffYear)
+            ->selectRaw('referred_user_id, period_year, period_month, SUM(commission_amount_cents) AS gross_cents')
+            ->groupBy('referred_user_id', 'period_year', 'period_month')
+            ->get();
 
+        // Single pass: build month totals, paying-users sets, per-user net (starts at gross),
+        // and a per-month index of (rid, gross) tuples for adjustment distribution below.
+        $monthGrossTotals = [];
+        $perUserMonthIndex = [];
         $payingByMonth = [];
-        foreach ($commissions as $c) {
-            $key = $c->period_year.'-'.$c->period_month;
+        $perUserNet = [];
+
+        foreach ($perUserPerMonthGross as $row) {
+            $key = $row->period_year.'-'.$row->period_month;
+            $rid = (int) $row->referred_user_id;
+            $cents = (int) $row->gross_cents;
+
+            $monthGrossTotals[$key] = ($monthGrossTotals[$key] ?? 0) + $cents;
+            $perUserMonthIndex[$key][] = ['rid' => $rid, 'gross' => $cents];
+            $payingByMonth[$key][$rid] = true;
+            $perUserNet[$rid] = ($perUserNet[$rid] ?? 0) + $cents;
+        }
+
+        foreach ($payingByMonth as $key => $set) {
             if (! isset($monthlyMap[$key])) {
                 continue;
             }
-            if (! isset($payingByMonth[$key])) {
-                $payingByMonth[$key] = [];
-            }
-            $payingByMonth[$key][$c->referred_user_id] = true;
-        }
-        foreach ($payingByMonth as $key => $set) {
             $monthlyMap[$key]['paying_users'] = count($set);
         }
 
-        $referralRows = [];
-        $perUserGross = AffiliateCommission::query()
-            ->where('partner_user_id', $partnerUserId)
-            ->tap($closedScope)
-            ->where('period_year', '>=', Carbon::now()->subYear()->year)
-            ->selectRaw('referred_user_id, SUM(commission_amount_cents) AS gross_cents')
-            ->groupBy('referred_user_id')
-            ->pluck('gross_cents', 'referred_user_id')
-            ->all();
+        // Distribute each month's adjustment commission impact across that month's
+        // referrals proportionally to each referral's share of the month's gross.
+        // Reuses $adjustmentsByMonth (signed cents from commissionAmountCents()).
+        foreach ($adjustmentsByMonth as $key => $signedCents) {
+            [$y] = array_map('intval', explode('-', $key));
 
+            // Same window as the column itself (period_year >= cutoffYear).
+            if ($y < $cutoffYear) {
+                continue;
+            }
+
+            $monthTotal = $monthGrossTotals[$key] ?? 0;
+
+            // No commissions to distribute against in this month — the adjustment still
+            // affects total_earned_cents (via $monthlyMap above) but cannot be attributed
+            // to a specific referral.
+            if ($monthTotal === 0) {
+                continue;
+            }
+
+            foreach ($perUserMonthIndex[$key] as $entry) {
+                $share = (int) round($entry['gross'] * $signedCents / $monthTotal);
+                $perUserNet[$entry['rid']] = ($perUserNet[$entry['rid']] ?? 0) + $share;
+            }
+        }
+
+        $referralRows = [];
         foreach ($referrals as $referral) {
             $info = $this->infoResolver->infoFor((int) $referral->referred_user_id);
 
@@ -193,13 +227,17 @@ class PartnerStatistics
                 $activePaying++;
             }
 
+            // Cap at zero for display: a partial-month negative adjustment can push one
+            // referral's net below zero, but the column never shows negative — those
+            // losses still appear in the partner-level "Total earned" tile and the
+            // adjustments list below.
             $referralRows[] = [
                 'user_id' => (int) $referral->referred_user_id,
                 'display_name' => $info['display_name'] ?? ('User #'.$referral->referred_user_id),
                 'is_paying' => (bool) ($info['is_paying'] ?? false),
                 'plan' => $info['plan'] ?? null,
                 'attributed_at' => $referral->attributed_at?->toIso8601String() ?? '',
-                'gross_last_12mo_cents' => (int) ($perUserGross[$referral->referred_user_id] ?? 0),
+                'gross_last_12mo_cents' => max(0, (int) ($perUserNet[(int) $referral->referred_user_id] ?? 0)),
             ];
         }
 
