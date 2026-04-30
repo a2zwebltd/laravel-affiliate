@@ -1,0 +1,80 @@
+{
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "a2zwebltd/laravel-affiliate",
+    "description": "Generic affiliate / revenue-share engine for Laravel: opt-in workflow, monthly commission closure, admin adjustments, partner-initiated payout requests, Blade+Alpine and Livewire dashboards.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "laravel",
+        "affiliate",
+        "revenue-share",
+        "referral",
+        "partners",
+        "commission",
+        "payouts"
+    ],
+    "homepage": "https://github.com/a2zwebltd/laravel-affiliate",
+    "support": {
+        "issues": "https://github.com/a2zwebltd/laravel-affiliate/issues",
+        "source": "https://github.com/a2zwebltd/laravel-affiliate"
+    },
+    "authors": [
+        {
+            "name": "A2Z WEB",
+            "homepage": "https://a2zweb.co/"
+        },
+        {
+            "name": "Dawid Makowski",
+            "role": "Maintainer",
+            "homepage": "https://github.com/makowskid"
+        }
+    ],
+    "require": {
+        "php": "^8.2",
+        "barryvdh/laravel-dompdf": "^3.1",
+        "laravel/framework": "^12.0|^13.0",
+        "rinvex/countries": "^9.1"
+    },
+    "require-dev": {
+        "laravel/nova": "^5.0",
+        "laravel/pint": "^1.25",
+        "livewire/livewire": "^3.0|^4.0",
+        "orchestra/testbench": "^10.6",
+        "pestphp/pest": "^3.0|^4.0",
+        "pestphp/pest-plugin-laravel": "^3.0|^4.0"
+    },
+    "suggest": {
+        "laravel/nova": "Enables the bundled Nova resources, actions, and admin menu via NovaIntegration::resources() / NovaIntegration::menuSection().",
+        "livewire/livewire": "Enables the reactive Livewire UI layer (PartnerDashboard, ApplicationForm, PayoutRequestForm)."
+    },
+    "autoload": {
+        "psr-4": {
+            "A2ZWeb\\Affiliate\\": "src/",
+            "A2ZWeb\\Affiliate\\Database\\Factories\\": "database/factories/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "A2ZWeb\\Affiliate\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "A2ZWeb\\Affiliate\\AffiliateServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true,
+    "scripts": {
+        "test": "vendor/bin/pest",
+        "lint": "vendor/bin/pint"
+    },
+    "config": {
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        }
+    }
+}
