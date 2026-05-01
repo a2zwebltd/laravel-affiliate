@@ -4,13 +4,19 @@ namespace A2ZWeb\Affiliate\Services;
 
 use A2ZWeb\Affiliate\Models\AffiliatePartner;
 use A2ZWeb\Affiliate\Models\AffiliateReferral;
+use A2ZWeb\Affiliate\Notifications\PartnerEligibleToApply;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cookie;
+use Illuminate\Support\Facades\Notification;
 
 class ReferralAttributor
 {
+    public function __construct(
+        private readonly EligibilityChecker $eligibilityChecker,
+    ) {}
+
     public function captureFromRequest(Request $request): void
     {
         $code = $request->query(config('affiliate.query_param', 'aff'));
@@ -18,10 +24,7 @@ class ReferralAttributor
             return;
         }
 
-        $partner = AffiliatePartner::query()
-            ->where('code', $code)
-            ->where('status', AffiliatePartner::STATUS_APPROVED)
-            ->first();
+        $partner = $this->findAttributablePartner($code);
 
         if (! $partner) {
             return;
@@ -43,10 +46,7 @@ class ReferralAttributor
             return null;
         }
 
-        $partner = AffiliatePartner::query()
-            ->where('code', $code)
-            ->where('status', AffiliatePartner::STATUS_APPROVED)
-            ->first();
+        $partner = $this->findAttributablePartner($code);
 
         if (! $partner) {
             return null;
@@ -59,6 +59,9 @@ class ReferralAttributor
         $existing = AffiliateReferral::query()->where('referred_user_id', $newUser->getKey())->first();
         if ($existing) {
             if (config('affiliate.attribution', 'first_touch') === 'last_touch') {
+                $newPartnerUser = $partner->user;
+                $countBefore = $newPartnerUser ? $this->eligibilityChecker->referredCount($newPartnerUser) : 0;
+
                 $existing->update([
                     'partner_user_id' => $partner->user_id,
                     'code_used' => $code,
@@ -66,12 +69,19 @@ class ReferralAttributor
                     'user_agent' => substr((string) $request->userAgent(), 0, 512),
                     'attributed_at' => Carbon::now(),
                 ]);
+
+                if ($newPartnerUser) {
+                    $this->notifyIfNewlyEligible($newPartnerUser, $countBefore);
+                }
             }
 
             return $existing;
         }
 
-        return AffiliateReferral::create([
+        $partnerUser = $partner->user;
+        $countBefore = $partnerUser ? $this->eligibilityChecker->referredCount($partnerUser) : 0;
+
+        $referral = AffiliateReferral::create([
             'partner_user_id' => $partner->user_id,
             'referred_user_id' => $newUser->getKey(),
             'code_used' => $code,
@@ -79,6 +89,12 @@ class ReferralAttributor
             'user_agent' => substr((string) $request->userAgent(), 0, 512),
             'attributed_at' => Carbon::now(),
         ]);
+
+        if ($partnerUser) {
+            $this->notifyIfNewlyEligible($partnerUser, $countBefore);
+        }
+
+        return $referral;
     }
 
     /**
@@ -117,7 +133,10 @@ class ReferralAttributor
             return $existing;
         }
 
-        return AffiliateReferral::create([
+        $partnerUser = $partner->user;
+        $countBefore = $partnerUser ? $this->eligibilityChecker->referredCount($partnerUser) : 0;
+
+        $referral = AffiliateReferral::create([
             'partner_user_id' => $partner->user_id,
             'referred_user_id' => $referredUser->getKey(),
             'code_used' => $codeUsed ?? (string) $partner->code,
@@ -125,5 +144,42 @@ class ReferralAttributor
             'user_agent' => 'manual-admin-attach',
             'attributed_at' => $attributedAt ?? Carbon::now(),
         ]);
+
+        if ($partnerUser) {
+            $this->notifyIfNewlyEligible($partnerUser, $countBefore);
+        }
+
+        return $referral;
+    }
+
+    /**
+     * Resolve the AffiliatePartner that should receive attribution for a code.
+     *
+     * Accepts pending and approved partners — pending covers both the share-only stub
+     * (applied_at=null) and a submitted-but-not-yet-decided application. Rejected and
+     * suspended codes are ignored: the user has been told they cannot earn.
+     */
+    private function findAttributablePartner(string $code): ?AffiliatePartner
+    {
+        return AffiliatePartner::query()
+            ->where('code', $code)
+            ->whereIn('status', [AffiliatePartner::STATUS_PENDING, AffiliatePartner::STATUS_APPROVED])
+            ->first();
+    }
+
+    private function notifyIfNewlyEligible(Model $partnerUser, int $countBefore): void
+    {
+        $min = (int) config('affiliate.min_referred_users', 2);
+        if ($countBefore >= $min) {
+            return;
+        }
+        if ($this->eligibilityChecker->referredCount($partnerUser) < $min) {
+            return;
+        }
+        if ($this->eligibilityChecker->hasOpenApplication($partnerUser)) {
+            return;
+        }
+
+        Notification::send($partnerUser, new PartnerEligibleToApply);
     }
 }

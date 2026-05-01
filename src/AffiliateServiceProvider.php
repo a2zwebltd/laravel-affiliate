@@ -4,6 +4,7 @@ namespace A2ZWeb\Affiliate;
 
 use A2ZWeb\Affiliate\Console\Commands\CloseMonthCommand;
 use A2ZWeb\Affiliate\Console\Commands\MigrateFromJijunairCommand;
+use A2ZWeb\Affiliate\Console\Commands\NotifyEligiblePartnersCommand;
 use A2ZWeb\Affiliate\Console\Commands\RecalcPartnerCommand;
 use A2ZWeb\Affiliate\Contracts\ReferredUserInfoResolver;
 use A2ZWeb\Affiliate\Contracts\RevenueResolver;
@@ -177,6 +178,7 @@ class AffiliateServiceProvider extends ServiceProvider
             CloseMonthCommand::class,
             RecalcPartnerCommand::class,
             MigrateFromJijunairCommand::class,
+            NotifyEligiblePartnersCommand::class,
         ]);
     }
 
