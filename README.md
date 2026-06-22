@@ -2,6 +2,11 @@
 
 Generic affiliate / revenue-share engine for Laravel — opt-in workflow, monthly commission closure, admin adjustments, partner-initiated payout requests, immutable commission statements, Blade+Alpine and Livewire dashboards.
 
+[![Packagist Version](https://img.shields.io/packagist/v/a2zwebltd/laravel-affiliate.svg)](https://packagist.org/packages/a2zwebltd/laravel-affiliate)
+[![Downloads](https://img.shields.io/packagist/dt/a2zwebltd/laravel-affiliate.svg)](https://packagist.org/packages/a2zwebltd/laravel-affiliate)
+![PHP](https://img.shields.io/badge/PHP-%5E8.2-blue)
+![Laravel](https://img.shields.io/badge/Laravel-12%20%7C%2013-blue)
+
 ## Features
 
 - 🔗 **Cookie + query-param attribution**: First-touch or last-touch, configurable lifetime.
