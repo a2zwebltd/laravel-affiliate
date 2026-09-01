@@ -2,6 +2,13 @@
 
 All notable changes to `a2zwebltd/laravel-affiliate` will be documented in this file.
 
+## [1.2.0] - 2026-09-01
+
+### Added
+- Nova `AffiliatePartner` resource now shows referral count and referred revenue (attributed spend from `source_amount_cents`, excluding reversed commissions) on index and detail, shows `Total Earned (cents)` on the index, and lists the partner's referrals via a `HasMany` panel.
+- Nova `AffiliateReferral` resource shows per-referral attributed revenue.
+- `nova.laravel.com` composer repository declared for the `laravel/nova` dev dependency.
+
 ## [1.0.0] - 2026-04-30
 
 ### Added

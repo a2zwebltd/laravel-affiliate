@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace A2ZWeb\Affiliate\Nova;
 
+use A2ZWeb\Affiliate\Models\AffiliateCommission as AffiliateCommissionModel;
 use A2ZWeb\Affiliate\Models\AffiliateReferral as AffiliateReferralModel;
 use Illuminate\Http\Request;
 use Laravel\Nova\Fields\BelongsTo;
@@ -38,6 +39,15 @@ class AffiliateReferral extends Resource
             BelongsTo::make(__('Partner'), 'partner', $userResource),
             BelongsTo::make(__('Referred user'), 'referredUser', $userResource),
             Text::make(__('Code used'))->sortable(),
+            Text::make(__('Attributed revenue'), function (AffiliateReferralModel $referral): string {
+                $cents = (int) AffiliateCommissionModel::query()
+                    ->where('partner_user_id', $referral->partner_user_id)
+                    ->where('referred_user_id', $referral->referred_user_id)
+                    ->whereIn('status', ['closed', 'requested', 'paid'])
+                    ->sum('source_amount_cents');
+
+                return '$'.number_format($cents / 100, 2);
+            })->exceptOnForms()->help(__('Spend attributed in closed months, excluding reversed commissions.')),
             Text::make(__('IP'))->onlyOnDetail(),
             Text::make(__('User agent'))->onlyOnDetail(),
             DateTime::make(__('Attributed at'))->sortable(),

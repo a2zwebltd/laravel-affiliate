@@ -63,6 +63,18 @@ class AffiliatePartner extends Resource
 
             Date::make(__('Program Joined At'))->help(__('Statistics floor — commissions only count from this month onwards.'))->nullable(),
 
+            Number::make(__('Referrals'), function (AffiliatePartnerModel $partner): int {
+                return (int) $partner->referrals()->count();
+            })->exceptOnForms(),
+
+            Text::make(__('Referred revenue'), function (AffiliatePartnerModel $partner): string {
+                $cents = (int) $partner->commissions()
+                    ->whereIn('status', ['closed', 'requested', 'paid'])
+                    ->sum('source_amount_cents');
+
+                return '$'.number_format($cents / 100, 2);
+            })->exceptOnForms()->help(__('Attributed spend of referred users — closed months from Program Joined At onwards, excluding reversed commissions.')),
+
             Number::make(__('Revenue share override (bp)'), 'revenue_share_bp')
                 ->help(__('Leave empty to use global default (:bp bp = :pct%). Per-partner override applies to commissions for closed months going forward; historical rows keep their snapshot rate.', [
                     'bp' => config('affiliate.revenue_share_bp'),
@@ -77,7 +89,7 @@ class AffiliatePartner extends Resource
                 return (int) $partner->commissions()
                     ->whereIn('status', ['closed', 'requested', 'paid'])
                     ->sum('commission_amount_cents');
-            })->onlyOnDetail(),
+            })->exceptOnForms(),
 
             Number::make(__('Pending Payout (cents)'), function (AffiliatePartnerModel $partner): int {
                 return (int) $partner->commissions()->where('status', 'closed')->sum('commission_amount_cents');
@@ -109,6 +121,7 @@ class AffiliatePartner extends Resource
                 Text::make(__('Accepted terms IP'), 'accepted_terms_ip')->onlyOnDetail(),
             ]),
 
+            HasMany::make(__('Referrals'), 'referrals', AffiliateReferral::class),
             HasMany::make(__('Commissions'), 'commissions', AffiliateCommission::class),
             HasMany::make(__('Adjustments'), 'adjustments', AffiliateAdjustment::class),
             HasMany::make(__('Payout requests'), 'payoutRequests', AffiliatePayoutRequest::class),
