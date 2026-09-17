@@ -9,9 +9,15 @@ jobs:
   code-quality:
     runs-on: ubuntu-latest
 
+    # Nova is a paid package behind private credentials. Set a COMPOSER_AUTH
+    # secret to test against it here; without one the step below drops it and
+    # the Nova-only test skips itself.
+    env:
+      COMPOSER_AUTH: ${{ secrets.COMPOSER_AUTH }}
+
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
@@ -20,16 +26,20 @@ jobs:
           coverage: none
 
       - name: Cache Composer packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ./vendor
           key: composer-${{ hashFiles('composer.json') }}
+
+      - name: Drop Nova when no credentials are configured
+        if: env.COMPOSER_AUTH == ''
+        run: composer remove --dev laravel/nova --no-update
 
       - name: Install Composer dependencies
         run: composer install --no-progress --prefer-dist --no-interaction
 
       - name: Cache Pint
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ./pint-cache
           key: pint-cache

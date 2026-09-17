@@ -10,6 +10,17 @@ use Laravel\Nova\Fields\Field;
 use Laravel\Nova\Http\Requests\NovaRequest;
 use Laravel\Nova\Resource;
 
+/*
+ * Nova is a paid package, so CI without credentials installs without it. The
+ * class below extends a Nova class at declaration time, which would fatal — so
+ * bail out of the whole file rather than let it be parsed.
+ */
+if (! class_exists(Resource::class)) {
+    it('covers the Nova resources')->skip('laravel/nova is not installed.');
+
+    return;
+}
+
 class NovaTestUserResource extends Resource
 {
     public static string $model = User::class;
