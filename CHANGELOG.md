@@ -2,6 +2,23 @@
 
 All notable changes to `a2zwebltd/laravel-affiliate` will be documented in this file.
 
+## [1.3.0] - 2026-09-23
+
+### Fixed
+- `vendor:publish --tag=affiliate-views` now publishes `resources/views/blade` to `resources/views/vendor/affiliate` and `resources/views/livewire` to `resources/views/vendor/affiliate-livewire`, the directories Laravel reads overrides from. Previously it copied into `vendor/affiliate/{blade,livewire}`, so published overrides were silently ignored. Move any files from those old folders.
+- The default `affiliate.partner_statement_view` (`affiliate::partner-statement`) now ships with the package, so the partner statement page works without a host view. An empty configured value falls back to it.
+- Statements can no longer be issued in the name of the placeholder "Acme Ltd." entity. The `affiliate_statements.issuing_entity` defaults are now `null`. Generating, issuing or completing a payout throws `IssuingEntityNotConfigured` and logs an error while `code` or `legal_name` is empty, or while any field still holds a pre-1.3.0 placeholder, which also covers a previously published config file. Payout completion checks before marking the request paid.
+- README: the resolver example now uses the real `RevenueResolver` methods, attribution is documented as automatic (global middleware plus `Registered` listener, no `affiliate.capture` alias), and the referral threshold counts all referrals.
+
+### Added
+- `affiliate-views-blade` and `affiliate-views-livewire` publish tags.
+- `A2ZWeb\Affiliate\Support\IssuingEntity` validator and `A2ZWeb\Affiliate\Exceptions\IssuingEntityNotConfigured`.
+- Laravel Boost resources: the `resources/boost/guidelines/core.blade.php` guideline and the `affiliate-integration` skill.
+
+### Upgrade notes
+- Set `AFFILIATE_STATEMENTS_ENTITY_CODE` and `AFFILIATE_STATEMENTS_LEGAL_NAME` (plus address, country, company number and tax note as needed) before the next payout. If you published `config/affiliate_statements.php` from an older version, remove its Acme defaults or delete the file.
+- Move published views from `resources/views/vendor/affiliate/blade/*` to `resources/views/vendor/affiliate/*`, and from `resources/views/vendor/affiliate/livewire/*` to `resources/views/vendor/affiliate-livewire/*`. They will then take effect, so delete any that are unmodified copies.
+
 ## [1.2.0] - 2026-09-01
 
 ### Added
