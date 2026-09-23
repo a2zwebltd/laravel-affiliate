@@ -100,9 +100,16 @@ class AffiliateServiceProvider extends ServiceProvider
             __DIR__.'/../database/migrations' => database_path('migrations'),
         ], 'affiliate-migrations');
 
-        $this->publishes([
-            __DIR__.'/../resources/views' => resource_path('views/vendor/affiliate'),
-        ], 'affiliate-views');
+        // Each source folder is its own view namespace (see registerViews()), so
+        // each publishes to the directory Laravel checks for that namespace:
+        // views/vendor/affiliate for `affiliate::` and
+        // views/vendor/affiliate-livewire for `affiliate-livewire::`.
+        $bladeViews = [__DIR__.'/../resources/views/blade' => resource_path('views/vendor/affiliate')];
+        $livewireViews = [__DIR__.'/../resources/views/livewire' => resource_path('views/vendor/affiliate-livewire')];
+
+        $this->publishes($bladeViews, 'affiliate-views-blade');
+        $this->publishes($livewireViews, 'affiliate-views-livewire');
+        $this->publishes($bladeViews + $livewireViews, 'affiliate-views');
 
         $this->publishes([
             __DIR__.'/../resources/lang' => $this->app->langPath('vendor/affiliate'),
