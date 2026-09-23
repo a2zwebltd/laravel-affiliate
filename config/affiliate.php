@@ -53,8 +53,10 @@ return [
 
     /*
      * View used by StatementController::show() for the partner-facing statement
-     * detail page. Override to a host-app view (e.g. 'affiliate.partner-statement')
-     * if your app ships a custom blade with its own layout component.
+     * detail page. The bundled default extends `affiliate.layout` like the other
+     * partner pages. Override to a host-app view (e.g. 'affiliate.partner-statement')
+     * if your app ships a custom blade with its own layout component; it receives
+     * `$statement` (lines loaded) and `$snapshot` (the partner billing snapshot).
      */
     'partner_statement_view' => env('AFFILIATE_PARTNER_STATEMENT_VIEW', 'affiliate::partner-statement'),
 

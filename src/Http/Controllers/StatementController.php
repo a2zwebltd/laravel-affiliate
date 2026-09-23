@@ -17,7 +17,7 @@ class StatementController extends Controller
     {
         abort_unless($request->user()->can('view', $statement), 404);
 
-        $view = (string) config('affiliate.partner_statement_view', 'affiliate::partner-statement');
+        $view = (string) config('affiliate.partner_statement_view') ?: 'affiliate::partner-statement';
 
         return response()->view($view, [
             'statement' => $statement->load('lines'),
