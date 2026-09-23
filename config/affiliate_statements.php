@@ -7,20 +7,19 @@ return [
      * later replaces these env vars (e.g. ownership transfer), past
      * statements still show their original origin.
      *
-     * Defaults are generic Acme Ltd placeholders — host application
-     * must override via env to use its real legal info.
+     * `code` and `legal_name` are required: generating or issuing a statement
+     * throws IssuingEntityNotConfigured (and logs an error) while either is
+     * empty, or while any field still holds the "Acme Ltd." placeholder that
+     * versions before 1.3.0 shipped as defaults.
      */
     'issuing_entity' => [
-        'code' => env('AFFILIATE_STATEMENTS_ENTITY_CODE', 'acme_ltd'),
-        'legal_name' => env('AFFILIATE_STATEMENTS_LEGAL_NAME', 'Acme Ltd.'),
-        'company_number' => env('AFFILIATE_STATEMENTS_COMPANY_NUMBER', '00000000'),
+        'code' => env('AFFILIATE_STATEMENTS_ENTITY_CODE'),
+        'legal_name' => env('AFFILIATE_STATEMENTS_LEGAL_NAME'),
+        'company_number' => env('AFFILIATE_STATEMENTS_COMPANY_NUMBER'),
         'company_number_label' => env('AFFILIATE_STATEMENTS_COMPANY_NUMBER_LABEL', 'Company Number'),
-        'address' => env('AFFILIATE_STATEMENTS_ADDRESS', '123 Example Street, Example City, EX1 2AB'),
-        'country' => env('AFFILIATE_STATEMENTS_COUNTRY', 'United Kingdom'),
-        'tax_status_note' => env(
-            'AFFILIATE_STATEMENTS_TAX_STATUS_NOTE',
-            'Acme Ltd. is not VAT/GST registered. No VAT or GST applies to this statement.'
-        ),
+        'address' => env('AFFILIATE_STATEMENTS_ADDRESS'),
+        'country' => env('AFFILIATE_STATEMENTS_COUNTRY'),
+        'tax_status_note' => env('AFFILIATE_STATEMENTS_TAX_STATUS_NOTE'),
         'statement_prefix' => env('AFFILIATE_STATEMENTS_PREFIX', 'ACS'),
         'support_email' => env('AFFILIATE_STATEMENTS_SUPPORT_EMAIL'),
     ],

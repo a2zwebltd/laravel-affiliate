@@ -7,6 +7,7 @@ namespace A2ZWeb\Affiliate\Services;
 use A2ZWeb\Affiliate\Models\AffiliateCommissionStatement;
 use A2ZWeb\Affiliate\Models\AffiliatePartner;
 use A2ZWeb\Affiliate\Models\AffiliatePayoutRequest;
+use A2ZWeb\Affiliate\Support\IssuingEntity;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use RuntimeException;
@@ -32,6 +33,10 @@ class PayoutCompletionWorkflow
         Carbon $paymentDate,
         string $paymentMethod = 'bank_transfer',
     ): AffiliateCommissionStatement {
+        // Check before marking the request paid, so a misconfigured entity
+        // cannot leave a paid payout without its statement.
+        IssuingEntity::assertConfigured();
+
         $this->payoutRequestService->markPaid($payoutRequest, $admin, $paymentReference);
 
         $partner = AffiliatePartner::query()

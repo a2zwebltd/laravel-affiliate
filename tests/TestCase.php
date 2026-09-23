@@ -31,6 +31,17 @@ abstract class TestCase extends Orchestra
         $app['config']->set('affiliate.admin_notification_email', 'admin@example.com');
         $app['config']->set('affiliate.terms.general_url', 'https://example.com/terms');
         $app['config']->set('affiliate.terms.affiliate_url', 'https://example.com/affiliate-terms');
+        $app['config']->set('affiliate.layout', 'affiliate-test::layout');
+        $app['config']->set('affiliate_statements.issuing_entity.code', 'test_ltd');
+        $app['config']->set('affiliate_statements.issuing_entity.legal_name', 'Test Entity Ltd.');
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Minimal host layout honouring the package's layout contract.
+        $this->app['view']->addNamespace('affiliate-test', __DIR__.'/views');
     }
 
     protected function defineDatabaseMigrations(): void

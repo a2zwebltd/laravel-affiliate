@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace A2ZWeb\Affiliate\Nova\Actions;
 
+use A2ZWeb\Affiliate\Exceptions\IssuingEntityNotConfigured;
 use A2ZWeb\Affiliate\Models\AffiliatePartner;
 use A2ZWeb\Affiliate\Services\CommissionStatementGenerator;
+use A2ZWeb\Affiliate\Support\IssuingEntity;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Support\Carbon;
@@ -30,6 +32,12 @@ class GenerateStatementForPartner extends Action
     {
         $start = Carbon::parse((string) $fields->period_start)->startOfDay();
         $end = Carbon::parse((string) $fields->period_end)->endOfDay();
+
+        try {
+            IssuingEntity::assertConfigured();
+        } catch (IssuingEntityNotConfigured $e) {
+            return Action::danger($e->getMessage());
+        }
 
         $generator = app(CommissionStatementGenerator::class);
         $count = 0;

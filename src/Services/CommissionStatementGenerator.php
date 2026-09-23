@@ -2,11 +2,13 @@
 
 namespace A2ZWeb\Affiliate\Services;
 
+use A2ZWeb\Affiliate\Exceptions\IssuingEntityNotConfigured;
 use A2ZWeb\Affiliate\Models\AffiliateAdjustment;
 use A2ZWeb\Affiliate\Models\AffiliateCommission;
 use A2ZWeb\Affiliate\Models\AffiliateCommissionStatement;
 use A2ZWeb\Affiliate\Models\AffiliateCommissionStatementLine;
 use A2ZWeb\Affiliate\Models\AffiliatePartner;
+use A2ZWeb\Affiliate\Support\IssuingEntity;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -20,6 +22,8 @@ class CommissionStatementGenerator
      *
      * Idempotent: if a non-cancelled statement for the same partner+period
      * already exists, it is returned untouched.
+     *
+     * @throws IssuingEntityNotConfigured
      */
     public function generateForPartner(
         AffiliatePartner $partner,
@@ -47,6 +51,10 @@ class CommissionStatementGenerator
         if ($existing) {
             return $existing;
         }
+
+        // The entity is snapshotted onto the statement here and never changes
+        // afterwards, so refuse before freezing empty or placeholder values.
+        IssuingEntity::assertConfigured();
 
         return DB::transaction(function () use ($partner, $periodStart, $periodEnd, $payoutRequestId): AffiliateCommissionStatement {
             $entity = config('affiliate_statements.issuing_entity');

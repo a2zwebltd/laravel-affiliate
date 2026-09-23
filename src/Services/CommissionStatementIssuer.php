@@ -5,6 +5,7 @@ namespace A2ZWeb\Affiliate\Services;
 use A2ZWeb\Affiliate\Events\StatementIssued;
 use A2ZWeb\Affiliate\Jobs\GenerateCommissionStatementPdf;
 use A2ZWeb\Affiliate\Models\AffiliateCommissionStatement;
+use A2ZWeb\Affiliate\Support\IssuingEntity;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
@@ -23,6 +24,9 @@ class CommissionStatementIssuer
         if (! $allowZero && (float) $statement->commission_amount <= 0) {
             throw new RuntimeException('Statement has no commission lines (zero amount). Pass allowZero to override.');
         }
+
+        // Drafts generated before 1.3.0 may carry the old "Acme Ltd." defaults.
+        IssuingEntity::assertStatementSnapshot($statement);
 
         DB::transaction(function () use ($statement): void {
             $number = $this->numbers->next($statement->issuing_entity_statement_prefix);
