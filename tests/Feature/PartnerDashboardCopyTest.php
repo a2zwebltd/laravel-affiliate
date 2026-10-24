@@ -40,3 +40,14 @@ it('describes a commission window in months instead of a lifetime one', function
 
     expect(renderNoPartnerCard())->toContain('Lifetime commission');
 });
+
+it('names the host product in the share texts and keeps a translated apostrophe inside the JS string', function () {
+    config()->set('app.name', "Avocat d'Or");
+
+    $html = view('affiliate::partials.share-buttons', ['link' => 'https://example.test/?aff=X'])->render();
+
+    expect($html)
+        ->not->toContain('SharpAPI')
+        ->toContain('Try Avocat')
+        ->not->toContain("Try Avocat d'Or");
+});

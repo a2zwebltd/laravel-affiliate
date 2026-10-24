@@ -59,6 +59,12 @@ return [
     'dashboard_tagline' => env('AFFILIATE_DASHBOARD_TAGLINE'),
 
     /*
+     * The product the partner's share buttons name ("Try :product with my
+     * link:"). Null uses config('app.name').
+     */
+    'share_product_name' => env('AFFILIATE_SHARE_PRODUCT_NAME'),
+
+    /*
      * View used by StatementController::show() for the partner-facing statement
      * detail page. The bundled default extends `affiliate.layout` like the other
      * partner pages. Override to a host-app view (e.g. 'affiliate.partner-statement')
