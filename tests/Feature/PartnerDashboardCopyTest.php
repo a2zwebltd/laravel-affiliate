@@ -1,5 +1,8 @@
 <?php
 
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Blade;
+
 /*
  * The "become a partner" card states the program's own terms: a host with no
  * referral threshold must not show "Invite at least 0 signups" and a 0/0
@@ -50,4 +53,15 @@ it('names the host product in the share texts and keeps a translated apostrophe 
         ->not->toContain('SharpAPI')
         ->toContain('Try Avocat')
         ->not->toContain("Try Avocat d'Or");
+});
+
+it('names months in the reader\'s language on the partner screens', function () {
+    Carbon::setLocale('pl');
+
+    $html = Blade::render("{{ now()->setDate(2026, 9, 1)->translatedFormat('F Y') }}");
+
+    expect($html)->toBe('wrzesień 2026')
+        ->and(file_get_contents(__DIR__.'/../../resources/views/blade/partials/state-approved.blade.php'))->not->toMatch("/->format\\('[MF]/");
+
+    Carbon::setLocale('en');
 });

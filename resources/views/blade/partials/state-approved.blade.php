@@ -17,12 +17,12 @@
     <div class="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <div class="text-xs font-semibold uppercase tracking-wider text-zinc-500">{{ __('Last closed month') }}</div>
         <div class="mt-2 text-3xl font-bold text-emerald-600 dark:text-emerald-400">{{ $fmt($stats['last_month_earned_cents']) }}<span class="ml-1 text-base font-medium text-zinc-400">{{ $cur }}</span></div>
-        <div class="mt-1 text-xs text-zinc-500">{{ now()->subMonthNoOverflow()->format('F Y') }}</div>
+        <div class="mt-1 text-xs text-zinc-500">{{ now()->subMonthNoOverflow()->translatedFormat('F Y') }}</div>
     </div>
     <div class="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <div class="text-xs font-semibold uppercase tracking-wider text-zinc-500">{{ __('Current month so far') }}</div>
         <div class="mt-2 text-3xl font-bold text-zinc-500 dark:text-zinc-400">{{ $fmt($stats['current_month_running_cents'] ?? 0) }}<span class="ml-1 text-base font-medium text-zinc-400">{{ $cur }}</span></div>
-        <div class="mt-1 text-xs text-zinc-500">{{ now()->format('F Y') }} · {{ __('not yet closed') }}</div>
+        <div class="mt-1 text-xs text-zinc-500">{{ now()->translatedFormat('F Y') }} · {{ __('not yet closed') }}</div>
     </div>
     <div class="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <div class="text-xs font-semibold uppercase tracking-wider text-zinc-500">{{ __('Active paying referrals') }}</div>
@@ -65,10 +65,10 @@
                         ? 'bg-zinc-300 dark:bg-zinc-600'
                         : 'bg-gradient-to-t from-emerald-600 to-teal-400 dark:from-emerald-500 dark:to-teal-300';
                 @endphp
-                <div class="group flex h-full flex-1 flex-col items-center justify-end gap-1" title="{{ \Carbon\Carbon::create($m['year'], $m['month'], 1)->format('M Y') }}: {{ $fmt($m['gross_cents']) }} {{ $cur }}{{ $titleSuffix }}">
+                <div class="group flex h-full flex-1 flex-col items-center justify-end gap-1" title="{{ \Carbon\Carbon::create($m['year'], $m['month'], 1)->translatedFormat('M Y') }}: {{ $fmt($m['gross_cents']) }} {{ $cur }}{{ $titleSuffix }}">
                     <div class="text-[10px] font-mono text-zinc-500 opacity-0 transition group-hover:opacity-100">{{ $fmt($m['gross_cents']) }}</div>
                     <div class="w-full rounded-t {{ $barClasses }} transition-all" style="height: {{ $h }}%"></div>
-                    <div class="text-[10px] {{ $isCurrent ? 'font-semibold text-zinc-500' : 'text-zinc-500' }}">{{ \Carbon\Carbon::create($m['year'], $m['month'], 1)->format('M') }}</div>
+                    <div class="text-[10px] {{ $isCurrent ? 'font-semibold text-zinc-500' : 'text-zinc-500' }}">{{ \Carbon\Carbon::create($m['year'], $m['month'], 1)->translatedFormat('M') }}</div>
                 </div>
             @endforeach
         </div>
@@ -141,7 +141,7 @@
                     @foreach ($stats['referrals'] as $r)
                         <tr class="hover:bg-zinc-50/50 dark:hover:bg-zinc-800/30">
                             <td class="px-6 py-3 font-medium text-zinc-900 dark:text-zinc-100">{{ $r['display_name'] }}</td>
-                            <td class="px-6 py-3 text-zinc-600 dark:text-zinc-400">{{ \Carbon\Carbon::parse($r['attributed_at'])->format('M j, Y') }}</td>
+                            <td class="px-6 py-3 text-zinc-600 dark:text-zinc-400">{{ \Carbon\Carbon::parse($r['attributed_at'])->translatedFormat('M j, Y') }}</td>
                             <td class="px-6 py-3">
                                 @if ($r['is_paying'])
                                     <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
@@ -192,7 +192,7 @@
                             };
                         @endphp
                         <tr>
-                            <td class="px-6 py-3 text-zinc-600 dark:text-zinc-400">{{ \Carbon\Carbon::create($a['year'], $a['month'], 1)->format('F Y') }}</td>
+                            <td class="px-6 py-3 text-zinc-600 dark:text-zinc-400">{{ \Carbon\Carbon::create($a['year'], $a['month'], 1)->translatedFormat('F Y') }}</td>
                             <td class="px-6 py-3 capitalize text-zinc-700 dark:text-zinc-300">{{ $a['type'] }}</td>
                             <td class="px-6 py-3 text-right font-mono {{ $signClass }}">{{ $sign }}{{ number_format(abs($a['base_cents']) / 100, 2) }} {{ $cur }}</td>
                             <td class="px-6 py-3 text-right font-mono {{ $signClass }}">{{ $sign }}{{ number_format(abs($a['commission_cents']) / 100, 2) }} {{ $cur }}</td>
@@ -242,8 +242,8 @@
                             $statement = $pr->statements->first();
                         @endphp
                         <tr>
-                            <td class="px-6 py-3 text-zinc-600 dark:text-zinc-400">{{ $pr->requested_at->format('M j, Y') }}</td>
-                            <td class="px-6 py-3 text-zinc-600 dark:text-zinc-400">{{ $pr->period_start->format('M Y') }} → {{ $pr->period_end->format('M Y') }}</td>
+                            <td class="px-6 py-3 text-zinc-600 dark:text-zinc-400">{{ $pr->requested_at->translatedFormat('M j, Y') }}</td>
+                            <td class="px-6 py-3 text-zinc-600 dark:text-zinc-400">{{ $pr->period_start->translatedFormat('M Y') }} → {{ $pr->period_end->translatedFormat('M Y') }}</td>
                             <td class="px-6 py-3 text-right font-mono text-zinc-900 dark:text-zinc-100">{{ $fmt($pr->net_amount_cents) }} {{ $cur }}</td>
                             <td class="px-6 py-3">
                                 <span class="inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize {{ $badge }}">{{ $pr->status }}</span>

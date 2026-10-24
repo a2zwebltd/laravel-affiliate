@@ -51,7 +51,7 @@
             <h1>{{ __('Affiliate Commission Statement') }}</h1>
             <strong>{{ $statement->statement_number }}</strong><br>
             <span class="muted">{{ __('Issue date:') }} {{ optional($statement->issued_at)->toDateString() ?? optional($statement->created_at)->toDateString() }}</span><br>
-            <span class="muted">{{ __('Period:') }} {{ $statement->period_start->format('M j, Y') }} – {{ $statement->period_end->format('M j, Y') }}</span>
+            <span class="muted">{{ __('Period:') }} {{ $statement->period_start->translatedFormat('M j, Y') }} – {{ $statement->period_end->translatedFormat('M j, Y') }}</span>
         </td>
     </tr>
 </table>

@@ -22,7 +22,7 @@ class CommissionStatementIssued extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        $period = $this->statement->period_start->format('M Y').' – '.$this->statement->period_end->format('M Y');
+        $period = $this->statement->period_start->translatedFormat('M Y').' – '.$this->statement->period_end->translatedFormat('M Y');
         $amount = number_format((float) $this->statement->commission_amount, 2);
         $cur = strtoupper($this->statement->currency);
 

@@ -21,7 +21,7 @@
     <div class="mt-4 flex flex-wrap items-start justify-between gap-4">
         <div>
             <h1 class="text-3xl font-bold text-zinc-900 dark:text-zinc-100">{{ __('Statement :number', ['number' => $statement->statement_number]) }}</h1>
-            <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{{ $statement->period_start?->format('M j, Y') }} – {{ $statement->period_end?->format('M j, Y') }}</p>
+            <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400">{{ $statement->period_start?->translatedFormat('M j, Y') }} – {{ $statement->period_end?->translatedFormat('M j, Y') }}</p>
         </div>
         <div class="flex items-center gap-2">
             <span class="inline-flex rounded-full px-3 py-1 text-xs font-semibold capitalize {{ $badge }}">{{ __($statement->payment_status) }}</span>
