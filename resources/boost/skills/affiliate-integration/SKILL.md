@@ -79,6 +79,7 @@ Binding: the provider resolves `config('affiliate.resolvers.revenue')` and `conf
 | `allow_self_referral` | `AFFILIATE_ALLOW_SELF_REFERRAL` | `false` |
 | `commission_window.mode` / `.months` | `AFFILIATE_WINDOW_MODE` / `AFFILIATE_WINDOW_MONTHS` | `lifetime` / `12` |
 | `layout` | `AFFILIATE_LAYOUT` | `layouts.app` |
+| `dashboard_tagline` | `AFFILIATE_DASHBOARD_TAGLINE` | null (the bundled "Refer developers and businesses…" line) |
 | `partner_statement_view` | `AFFILIATE_PARTNER_STATEMENT_VIEW` | `affiliate::partner-statement` (bundled) |
 | `invoice_disk` | `AFFILIATE_INVOICE_DISK` | `local` (partner-uploaded payout invoices) |
 | `routes.prefix` / `.name_prefix` / `.middleware` | `AFFILIATE_ROUTES_PREFIX` / `AFFILIATE_ROUTES_NAME_PREFIX` / `AFFILIATE_ROUTES_MIDDLEWARE` | `dashboard/affiliate` / `affiliate.` / `web,auth` |

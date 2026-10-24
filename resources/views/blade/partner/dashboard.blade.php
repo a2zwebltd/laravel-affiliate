@@ -41,8 +41,15 @@
                     <span class="size-1.5 rounded-full bg-emerald-400"></span>
                     {{ __('Affiliate Program') }}
                 </div>
-                <h1 class="mt-2 text-2xl font-bold leading-tight">{{ __('Earn :pct% lifetime revenue share', ['pct' => (int) $revenue_share_pct]) }}</h1>
-                <p class="mt-1.5 text-sm text-gray-300">{{ __('Refer developers and businesses. As long as they pay, you keep earning.') }}</p>
+                @php($windowMonths = config('affiliate.commission_window.mode', 'lifetime') === 'lifetime' ? null : (int) config('affiliate.commission_window.months', 12))
+                <h1 class="mt-2 text-2xl font-bold leading-tight">
+                    @if ($windowMonths === null)
+                        {{ __('Earn :pct% lifetime revenue share', ['pct' => (int) $revenue_share_pct]) }}
+                    @else
+                        {{ trans_choice('Earn :pct% revenue share for :count month|Earn :pct% revenue share for :count months', $windowMonths, ['pct' => (int) $revenue_share_pct]) }}
+                    @endif
+                </h1>
+                <p class="mt-1.5 text-sm text-gray-300">{{ __(config('affiliate.dashboard_tagline') ?: 'Refer developers and businesses. As long as they pay, you keep earning.') }}</p>
             </div>
             <div class="md:col-span-3 rounded-xl bg-gray-800 p-3">
                 <div class="text-[10px] font-medium uppercase tracking-wider text-gray-400">{{ __('Your share link') }}</div>

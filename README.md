@@ -250,6 +250,7 @@ All keys in `config/affiliate.php` can be overridden by environment variables. A
 | `AFFILIATE_COOKIE_TTL_DAYS` | `60` | Attribution cookie lifetime. |
 | `AFFILIATE_ADMIN_EMAIL` | — | Address that receives admin notifications. |
 | `AFFILIATE_LAYOUT` | `layouts.app` | Blade layout used by partner pages. |
+| `AFFILIATE_DASHBOARD_TAGLINE` | null | The line under the partner dashboard heading. Null keeps the bundled sentence. Goes through `__()`. |
 | `AFFILIATE_PARTNER_STATEMENT_VIEW` | `affiliate::partner-statement` | View for the partner-facing statement page. The bundled one extends `AFFILIATE_LAYOUT`. |
 | `AFFILIATE_ROUTES_MIDDLEWARE` | `web,auth` | Middleware on the partner route group (comma-separated). |
 | `AFFILIATE_NOVA_USER_RESOURCE` | `App\Nova\User` | Class used for `BelongsTo` user fields. |

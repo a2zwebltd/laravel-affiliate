@@ -4,7 +4,11 @@
         <div class="flex items-start justify-between gap-4">
             <div>
                 <h2 class="text-xl font-semibold text-zinc-900 dark:text-zinc-100">{{ __('Become an Affiliate Partner') }}</h2>
-                <p class="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{{ __('Invite at least :min signups to unlock the application form.', ['min' => $min_referred_users]) }}</p>
+                @if ($min_referred_users > 0)
+                    <p class="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{{ __('Invite at least :min signups to unlock the application form.', ['min' => $min_referred_users]) }}</p>
+                @else
+                    <p class="mt-1 text-sm text-zinc-600 dark:text-zinc-400">{{ __('You can apply right away; no referrals are needed first.') }}</p>
+                @endif
             </div>
             @if ($eligible)
                 <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1 text-xs font-semibold text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300">
@@ -17,6 +21,7 @@
             @endif
         </div>
 
+        @if ($min_referred_users > 0)
         <div class="mt-6">
             <div class="flex justify-between text-xs font-medium text-zinc-500">
                 <span>{{ __('Progress') }}</span>
@@ -26,6 +31,7 @@
                 <div class="h-full rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 transition-all duration-700" style="width: {{ min(100, ($referred_count / max(1, $min_referred_users)) * 100) }}%"></div>
             </div>
         </div>
+        @endif
 
         <div class="mt-6">
             @if ($eligible)
@@ -46,7 +52,11 @@
         <ul class="mt-4 space-y-3 text-sm text-zinc-700 dark:text-zinc-300">
             <li class="flex items-start gap-2">
                 <span class="mt-0.5 size-1.5 shrink-0 rounded-full bg-emerald-500"></span>
-                <span><strong class="font-semibold">{{ __('Lifetime commission') }}</strong> — {{ __('earn on every closed month your referrals stay active.') }}</span>
+                @if (config('affiliate.commission_window.mode', 'lifetime') === 'lifetime')
+                    <span><strong class="font-semibold">{{ __('Lifetime commission') }}</strong> — {{ __('earn on every closed month your referrals stay active.') }}</span>
+                @else
+                    <span><strong class="font-semibold">{{ trans_choice('Commission for :count month|Commission for :count months', (int) config('affiliate.commission_window.months', 12)) }}</strong> — {{ __('earn on every closed month in that window after each signup.') }}</span>
+                @endif
             </li>
             <li class="flex items-start gap-2">
                 <span class="mt-0.5 size-1.5 shrink-0 rounded-full bg-emerald-500"></span>

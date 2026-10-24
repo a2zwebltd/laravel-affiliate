@@ -52,6 +52,13 @@ return [
     'layout' => env('AFFILIATE_LAYOUT', 'layouts.app'),
 
     /*
+     * The line under the partner dashboard's heading. Null keeps the bundled
+     * sentence; set a product-specific one ("Refer law firms. …"). It goes
+     * through __(), so the host's lang/*.json can translate it.
+     */
+    'dashboard_tagline' => env('AFFILIATE_DASHBOARD_TAGLINE'),
+
+    /*
      * View used by StatementController::show() for the partner-facing statement
      * detail page. The bundled default extends `affiliate.layout` like the other
      * partner pages. Override to a host-app view (e.g. 'affiliate.partner-statement')
